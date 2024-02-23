@@ -16,7 +16,7 @@ jobs:
 
     - name: Build Keycloak and Create ZIP Distribution
       run: |
-        cd keycloak
+        ls -l
         ./mvnw -pl quarkus/deployment,quarkus/dist -am -DskipTests clean install
 
   # build-docker:
