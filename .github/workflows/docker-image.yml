@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Keycloak Build and Docker Image CI
 
 on:
   push:
@@ -7,35 +7,45 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
-
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-          
-    # - name: Build and push Docker image
-    #   run: |
-    #     docker buildx create --use
-    #     docker buildx build --platform linux/amd64,linux/arm64 -t ${{ secrets.DOCKERHUB_USERNAME }}/my-keycloak:latest -f quarkus/container/Dockerfile .
-    #     docker push ${{ secrets.DOCKERHUB_USERNAME }}/my-keycloak:latest
-
-    - name: Build and Push Docker Image
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+    - name: Build Keycloak and Create ZIP Distribution
       run: |
-        docker build --build-arg GIT_REPO=francescomazzini/keycloak --build-arg GIT_BRANCH=master -t $DOCKER_USERNAME/my-keycloak:latest .
-        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-        docker push $DOCKER_USERNAME/my-keycloak:latest
+        cd keycloak
+        ./mvnw -pl quarkus/deployment,quarkus/dist -am -DskipTests clean install
+
+  # build-docker:
+  #   runs-on: ubuntu-latest
+
+  #   needs: build
+
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v2
+
+  #   - name: Download Keycloak ZIP Distribution
+  #     uses: actions/download-artifact@v2
+  #     with:
+  #       name: keycloak-zip
+  #       path: keycloak-zip
+
+  #   - name: Build Docker Image
+  #     run: |
+  #       cd keycloak-zip
+  #       docker build -t my-keycloak-image .
+      
+  #   - name: Login to Docker Hub
+  #     uses: docker/login-action@v3
+  #     with:
+  #       username: ${{ secrets.DOCKERHUB_USERNAME }}
+  #       password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  #   - name: Push Docker Image to Docker Hub
+  #     run: |
+  #       docker tag my-keycloak-image:latest $DOCKER_USERNAME/my-keycloak:latest
+  #       docker push $DOCKER_USERNAME/my-keycloak:latest
