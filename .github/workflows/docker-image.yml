@@ -24,33 +24,28 @@ jobs:
       run: |
         ./mvnw -pl quarkus/deployment,quarkus/dist -am -DskipTests clean install
 
-  # build-docker:
-  #   runs-on: ubuntu-latest
+    - name: Publish ZIP artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: keycloak-dist
+        path: quarkus/dist/your-keycloak-artifact.zip
 
-  #   needs: build
+  docker:
+    runs-on: ubuntu-latest
+    needs: build
 
-  #   steps:
-  #   - name: Checkout repository
-  #     uses: actions/checkout@v2
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-  #   - name: Download Keycloak ZIP Distribution
-  #     uses: actions/download-artifact@v2
-  #     with:
-  #       name: keycloak-zip
-  #       path: keycloak-zip
+    - name: Build Docker image
+      run: |
+        docker build -t my-keycloak .
 
-  #   - name: Build Docker Image
-  #     run: |
-  #       cd keycloak-zip
-  #       docker build -t my-keycloak-image .
-      
-  #   - name: Login to Docker Hub
-  #     uses: docker/login-action@v3
-  #     with:
-  #       username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #       password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-  #   - name: Push Docker Image to Docker Hub
-  #     run: |
-  #       docker tag my-keycloak-image:latest $DOCKER_USERNAME/my-keycloak:latest
-  #       docker push $DOCKER_USERNAME/my-keycloak:latest
+    - name: Build and Push Docker Image
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+      run: |
+        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        docker push $DOCKER_USERNAME/my-keycloak
