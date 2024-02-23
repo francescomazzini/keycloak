@@ -28,5 +28,5 @@ jobs:
     - name: Build and push Docker image
       run: |
         docker buildx create --use
-        docker buildx build --platform linux/amd64,linux/arm64 -t ${{ secrets.DOCKERHUB_USERNAME }}/my-keycloak:latest .
+        docker buildx build --platform linux/amd64,linux/arm64 -t ${{ secrets.DOCKERHUB_USERNAME }}/my-keycloak:latest -f ../../quarkus/container/Dockerfile .
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/my-keycloak:latest
