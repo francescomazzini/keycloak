@@ -25,8 +25,17 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
           
-    - name: Build and push Docker image
+    # - name: Build and push Docker image
+    #   run: |
+    #     docker buildx create --use
+    #     docker buildx build --platform linux/amd64,linux/arm64 -t ${{ secrets.DOCKERHUB_USERNAME }}/my-keycloak:latest -f quarkus/container/Dockerfile .
+    #     docker push ${{ secrets.DOCKERHUB_USERNAME }}/my-keycloak:latest
+
+    - name: Build and Push Docker Image
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
-        docker buildx create --use
-        docker buildx build --platform linux/amd64,linux/arm64 -t ${{ secrets.DOCKERHUB_USERNAME }}/my-keycloak:latest -f quarkus/container/Dockerfile .
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/my-keycloak:latest
+        docker build --build-arg GIT_REPO=francescomazzini/keycloak --build-arg GIT_BRANCH=master -t $DOCKER_USERNAME/my-keycloak:latest .
+        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        docker push $DOCKER_USERNAME/my-keycloak:latest
