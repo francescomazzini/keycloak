@@ -14,9 +14,14 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Set up JDK 17
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'adopt'
+        java-version: '17'
+
     - name: Build Keycloak and Create ZIP Distribution
       run: |
-        ls -l
         ./mvnw -pl quarkus/deployment,quarkus/dist -am -DskipTests clean install
 
   # build-docker:
